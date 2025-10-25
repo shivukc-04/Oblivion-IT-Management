@@ -6,5 +6,5 @@ const router = express.Router()
 router.route("/register")
     .post(createNewUser)
 router.route("/login")
-    .get(handleUserLogin)
+    .post(handleUserLogin)
 export default router
