@@ -1,13 +1,13 @@
 import mongoose from 'mongoose';
-
+import bcrypt from 'bcrypt'
 const userSchema = new mongoose.Schema({
     userId:{
         type: String,
         required: true,
         unique: true,
         trim: true,
-        minLength: 10,
-        maxLength: 10,
+        minLength: 8,
+        maxLength: 16,
     },
     username:{
         type: String,
@@ -15,13 +15,8 @@ const userSchema = new mongoose.Schema({
         trim: true,
         maxLength: 30,
         match: /^[^0-9]*$/,
-        trim: true,
     },
     password:{
-        type: String,
-        required: True,
-    },
-    salt:{
         type: String,
         required: true,
     },
@@ -39,5 +34,12 @@ const userSchema = new mongoose.Schema({
     }
 }, {timestamps: true})
 
-const user = mongoose.model("user", userSchema)
-export default user
+//pre-save hook - similar to trigger in SQL
+userSchema.pre("save", async function(next){
+    if(this.isModified("password")){
+        this.password = await bcrypt.hash(this.password, 10)
+    }
+    next()
+})
+const User = mongoose.model("user", userSchema)
+export default User
