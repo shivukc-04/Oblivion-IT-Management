@@ -29,8 +29,8 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        lowercase: true,
-        match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        lowercase: true,  //match regex is wrong 
+        match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/  
     }
 }, {timestamps: true})
 

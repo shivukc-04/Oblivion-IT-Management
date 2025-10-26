@@ -1,5 +1,9 @@
 import User from '../models/user.js'
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'
+dotenv.config()
+
 export async function createNewUser(req, res){
     try {
             const body = req.body
@@ -35,7 +39,10 @@ export async function handleUserLogin(req, res){
             //401 - unauthorised
             return res.status(401).json({"message": "username or password is wrong"})
         }
-        return res.status(200).send(user)
+        const payload = {userId: user.userId, role: user.role, email: user.email}
+        const jwt_secret_key = process.env.JWT_SECRET_KEY
+        const jwt_token = jwt.sign(payload, jwt_secret_key,{ expiresIn: process.env.JWT_TOKEN_TTL})
+        return res.status(200).json({token: jwt_token, user: payload})
     } catch (error) {
         console.error(error)
         return res.status(500).json({"message": "error finding the user"})
