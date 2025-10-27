@@ -22,6 +22,7 @@ app.use("/api/users", verifyToken, authorizeRoles("admin"), usersRouter)
 //start server after DB connection
 connectDB(CONNECTION_URI).then(() => {
     // createFirstAdmin()
+    // console.log("First Admin Created")
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
     });
