@@ -34,6 +34,7 @@ export async function handleUserLogin(req, res){
             return res.status(404).json({"message": "user NOT found"})
         }
         //compare plain-text password with hashed password
+        console.log(userId, password)
         const isMatch = await bcrypt.compare(password, user.password)
         if(!isMatch){
             //401 - unauthorised
