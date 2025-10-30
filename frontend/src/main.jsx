@@ -4,8 +4,10 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import './index.css'
 import App from './App.jsx'
-import RegisterPage from './pages/registerPage.jsx'
-import LoginPage from './pages/loginPage.jsx'
+import RegisterPage from './pages/RegisterPage.jsx'
+import LoginPage from './pages/LoginPage.jsx'
+import { AuthProvider } from './services/authProvider.jsx'
+import AdminRoute from './components/AdminRoute.jsx'
 
 
 const router = createBrowserRouter([
@@ -14,8 +16,10 @@ const router = createBrowserRouter([
     element: <App/>,
   },
   {
-    path: "/register",
-    element:<RegisterPage/> ,
+    path: "/admin/register",
+    element:(<AdminRoute>
+      <RegisterPage/>
+    </AdminRoute>) ,
   },
   {
     path: "/login",
@@ -24,7 +28,9 @@ const router = createBrowserRouter([
 ])
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router}/>
-    <Toaster/>
+    <AuthProvider>
+      <RouterProvider router={router}/>
+      <Toaster/>
+    </AuthProvider>
   </StrictMode>,
 )
