@@ -25,7 +25,7 @@ export default function App() {
     }
   }
 
-  return (
+  return ( 
     <div data-theme="corporate" className="min-h-screen bg-base-200 p-8">
       <button className="btn btn-primary mb-4" onClick={fetchUsers}>
         Show All Users

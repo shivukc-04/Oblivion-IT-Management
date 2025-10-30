@@ -3,6 +3,7 @@ import { ArrowLeftIcon } from 'lucide-react'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import axios from 'axios'
+
 const LoginPage = () => {
     const [userId, setuserId] = useState("")
     const [password, setPassword] = useState("")
@@ -25,7 +26,7 @@ const LoginPage = () => {
             toast.success("You are Logged In")
             navigate("/")
         } catch (error) {
-            if (error.response.status === 401){
+            if (error.response.status === 409){
               toast.error("userId or password is wrong")
               return
             }
@@ -40,6 +41,7 @@ const LoginPage = () => {
     }
 
   return (
+    
     <div  data-theme = 'fantasy' className='min-h-screen bg-base-200'>
       <div className='container mx-auto px-4 py-8'>
         <div className='max-w-2xl mx-auto'>
