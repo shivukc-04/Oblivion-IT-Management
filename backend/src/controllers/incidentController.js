@@ -1,6 +1,7 @@
 import { configDotenv } from 'dotenv';
+import mongoose from 'mongoose';
 import Incident from '../models/incident.js';
-import User from '../models/user.js'; 
+import User from '../models/user.js';
 const generateTicketId = () => {
   const prefix = 'IT';
   const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
@@ -22,9 +23,9 @@ const createIncident = async (req, res) => {
       return res.status(400).json({ message: 'Please provide title, description, and assignedTo fields' });
     }
 
-    // 2. Validate 'assignedTo' user (optional but good practice)
-    const userExists = await User.findById(assignedTo);
-    if (!userExists) {
+    // 2. Validate 'assignedTo' user
+    const assignedUser = await User.findById(assignedTo);
+    if (!assignedUser) {
       return res.status(404).json({ message: 'Assigned user not found' });
     }
 
@@ -32,9 +33,9 @@ const createIncident = async (req, res) => {
     const incident = await Incident.create({
       title,
       description,
-      priority, // Will use 'medium' if not provided, per your schema
-      assignedTo, // The ID of the user it's assigned to
-      createdBy: req.user._id, // Set from auth middleware
+      priority: priority || 'medium', // Will use 'medium' if not provided
+      assignedTo: assignedUser._id.toString(), // Store as string ID
+      createdBy: req.user._id.toString(), // Store as string ID from auth
       ticketId: generateTicketId(),
       status: 'open', // Default status on creation
     });
@@ -57,8 +58,11 @@ const createIncident = async (req, res) => {
  */
 const getAllIncidents = async (req, res) => {
   try {
-    // Find all incidents, sort by newest first
-    const incidents = await Incident.find({}).sort({ createdAt: -1 });
+    // Find all incidents, populate user details, sort by newest first
+    const incidents = await Incident.find({})
+      .populate('assignedTo', 'name email role')  // Populate assigned user details
+      .populate('createdBy', 'name email role')   // Populate creator details
+      .sort({ createdAt: -1 });
     res.status(200).json(incidents);
   } catch (error) {
     console.error(error);
@@ -73,7 +77,13 @@ const getAllIncidents = async (req, res) => {
  */
 const getIncidentById = async (req, res) => {
   try {
-    const incident = await Incident.findById(req.params.id);
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid incident ID format' });
+    }
+
+    const incident = await Incident.findById(req.params.id)
+      .populate('assignedTo', 'name email role')
+      .populate('createdBy', 'name email role');
 
     if (incident) {
       res.status(200).json(incident);
@@ -95,6 +105,21 @@ const updateIncident = async (req, res) => {
   try {
     const { title, description, status, priority, assignedTo } = req.body;
 
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid incident ID format' });
+    }
+
+    // If assignedTo is provided, validate the user exists
+    if (assignedTo) {
+      if (!mongoose.Types.ObjectId.isValid(assignedTo)) {
+        return res.status(400).json({ message: 'Invalid user ID format' });
+      }
+      const userExists = await User.findById(assignedTo);
+      if (!userExists) {
+        return res.status(404).json({ message: 'Assigned user not found' });
+      }
+    }
+
     const incident = await Incident.findById(req.params.id);
 
     if (!incident) {
@@ -102,10 +127,10 @@ const updateIncident = async (req, res) => {
     }
 
     // Update fields if they are provided
-    incident.title = title || incident.title;
-    incident.description = description || incident.description;
-    incident.priority = priority || incident.priority;
-    incident.assignedTo = assignedTo || incident.assignedTo;
+    if (title) incident.title = title;
+    if (description) incident.description = description;
+    if (priority) incident.priority = priority;
+    if (assignedTo) incident.assignedTo = assignedTo;
 
     // Special logic for status change
     if (status && status !== incident.status) {
@@ -119,7 +144,11 @@ const updateIncident = async (req, res) => {
       }
     }
 
-    const updatedIncident = await incident.save();
+    const updatedIncident = await (await incident.save())
+      .populate('assignedTo', 'name email role')
+      .populate('createdBy', 'name email role')
+      .execPopulate();
+    
     res.status(200).json(updatedIncident);
   } catch (error) {
     console.error(error);
