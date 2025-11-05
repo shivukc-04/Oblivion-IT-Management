@@ -26,7 +26,7 @@ const LoginPage = () => {
             toast.success("You are Logged In")
             navigate("/")
         } catch (error) {
-            if (error.response.status === 409){
+            if (error.response.status === 401){
               toast.error("userId or password is wrong")
               return
             }

@@ -27,7 +27,7 @@ app.use(cors({origin: "http://localhost:5173"}))
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 app.use("/api/auth", authRouter)
-app.use("/api/users", verifyToken, authorizeRoles("admin"), usersRouter)
+app.use("/api/users", verifyToken, authorizeRoles("admin", "operator") , usersRouter)
 app.use("/api/incidents", verifyToken, incidentRouter)
 
 //start server after DB connection
