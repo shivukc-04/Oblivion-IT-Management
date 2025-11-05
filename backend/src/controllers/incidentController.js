@@ -29,19 +29,28 @@ const createIncident = async (req, res) => {
       return res.status(404).json({ message: 'Assigned user not found' });
     }
 
-    // 3. Create the incident
+    // Get creator ID from auth token
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: 'User not authenticated or invalid token' });
+    }
+
+    // Create the incident
     const incident = await Incident.create({
       title,
       description,
-      priority: priority || 'medium', // Will use 'medium' if not provided
-      assignedTo: assignedUser._id.toString(), // Store as string ID
-      createdBy: req.user._id.toString(), // Store as string ID from auth
+      priority: priority || 'medium',
+      assignedTo: assignedUser._id,
+      createdBy: req.user._id,
       ticketId: generateTicketId(),
-      status: 'open', // Default status on creation
+      status: 'open',
     });
 
     if (incident) {
-      res.status(201).json(incident);
+      // Fetch the created incident with populated fields
+      const populatedIncident = await Incident.findById(incident._id)
+        .populate('assignedTo', 'username email role')
+        .populate('createdBy', 'username email role');
+      res.status(201).json(populatedIncident);
     } else {
       res.status(400).json({ message: 'Invalid incident data' });
     }
@@ -60,8 +69,8 @@ const getAllIncidents = async (req, res) => {
   try {
     // Find all incidents, populate user details, sort by newest first
     const incidents = await Incident.find({})
-      .populate('assignedTo', 'name email role')  // Populate assigned user details
-      .populate('createdBy', 'name email role')   // Populate creator details
+      .populate('assignedTo', 'username email role')  // Populate assigned user details
+      .populate('createdBy', 'username email role')   // Populate creator details
       .sort({ createdAt: -1 });
     res.status(200).json(incidents);
   } catch (error) {
@@ -82,8 +91,8 @@ const getIncidentById = async (req, res) => {
     }
 
     const incident = await Incident.findById(req.params.id)
-      .populate('assignedTo', 'name email role')
-      .populate('createdBy', 'name email role');
+      .populate('assignedTo', 'username email role')
+      .populate('createdBy', 'username email role');
 
     if (incident) {
       res.status(200).json(incident);
@@ -144,10 +153,12 @@ const updateIncident = async (req, res) => {
       }
     }
 
-    const updatedIncident = await (await incident.save())
-      .populate('assignedTo', 'name email role')
-      .populate('createdBy', 'name email role')
-      .execPopulate();
+    await incident.save();
+    
+    // Fetch the updated incident with populated fields
+    const updatedIncident = await Incident.findById(incident._id)
+      .populate('assignedTo', 'username email role')
+      .populate('createdBy', 'username email role');
     
     res.status(200).json(updatedIncident);
   } catch (error) {
