@@ -40,7 +40,13 @@ export async function handleUserLogin(req, res){
             //401 - unauthorised
             return res.status(401).json({"message": "username or password is wrong"})
         }
-        const payload = {userId: user.userId, role: user.role, email: user.email}
+        const payload = {
+          _id: user._id,
+          userId: user.userId,
+          username: user.username,
+          role: user.role,
+          email: user.email
+        }
         const jwt_secret_key = process.env.JWT_SECRET_KEY
         const jwt_token = jwt.sign(payload, jwt_secret_key,{ expiresIn: process.env.JWT_TOKEN_TTL})
         return res.status(200).json({token: jwt_token, user: payload})
