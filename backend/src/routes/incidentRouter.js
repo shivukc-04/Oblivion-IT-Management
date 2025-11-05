@@ -6,7 +6,8 @@ import {
   updateIncident,
   deleteIncident,
 } from '../controllers/incidentController.js';
-import { protect, authorize } from '../middleware/authMiddleware.js';
+import { verifyToken } from '../middlewares/verifyToken.js';
+import { authorizeRoles } from '../middlewares/authorizeRoles.js';
 
 // Create a new router instance
 const router = express.Router();
@@ -18,22 +19,22 @@ const router = express.Router();
  */
 router.route('/')
     // GET /api/incidents
-  .get(protect, getAllIncidents)
+  .get(verifyToken, getAllIncidents)
   
   // POST /api/incidents
-  .post(protect, authorize('admin', 'operator'), createIncident);
+  .post(verifyToken, authorizeRoles('admin', 'operator'), createIncident);
 
 /*
  * @route   /api/incidents/:id
  */
 router.route('/:id')
   // GET /api/incidents/:id
-  .get(protect, getIncidentById)
+  .get(verifyToken, getIncidentById)
 
   // PUT /api/incidents/:id
-  .put(protect, authorize('admin', 'operator'), updateIncident)
+  .put(verifyToken, authorizeRoles('admin', 'operator'), updateIncident)
 
   // DELETE /api/incidents/:id
-  .delete(protect, authorize('admin'), deleteIncident);
+  .delete(verifyToken, authorizeRoles('admin'), deleteIncident);
 
 export default router;

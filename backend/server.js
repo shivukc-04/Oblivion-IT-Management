@@ -4,11 +4,19 @@ import { connectDB } from './src/config/connectDB.js';
 import authRouter from './src/routes/authRouter.js';
 import usersRouter from './src/routes/usersRouter.js'
 import incidentRouter from './src/routes/incidentRouter.js';
-import { incidentMiddleware } from './src/middlewares/incidentMiddleware.js';
 import cors from 'cors'
 import { verifyToken } from './src/middlewares/verifyToken.js';
 import { authorizeRoles } from './src/middlewares/authorizeRoles.js';
 dotenv.config();
+
+// Validate required environment variables
+const requiredEnvVars = ['CONNECTION_URI', 'JWT_SECRET_KEY'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+    console.error('Missing required environment variables:', missingEnvVars);
+    process.exit(1);
+}
 
 const app = express();
 const PORT = process.env.PORT || 5250;
@@ -20,7 +28,7 @@ app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 app.use("/api/auth", authRouter)
 app.use("/api/users", verifyToken, authorizeRoles("admin"), usersRouter)
-app.use("/api/incidents", incidentMiddleware, incidentRouter)
+app.use("/api/incidents", verifyToken, incidentRouter)
 
 //start server after DB connection
 connectDB(CONNECTION_URI).then(() => {
