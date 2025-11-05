@@ -6,14 +6,34 @@ import './index.css'
 import App from './App.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
+import IncidentsList from './pages/IncidentsList.jsx'
+import IncidentForm from './pages/IncidentForm.jsx'
+import IncidentDetails from './pages/IncidentDetails.jsx'
 import { AuthProvider } from './services/authProvider.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
+import RoleRoute from './components/RoleRoute.jsx'
 
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App/>,
+  },
+  {
+    path: "/incidents",
+    element: <IncidentsList/>,
+  },
+  {
+    path: "/incidents/new",
+    element: (
+      <RoleRoute allowedRoles={["admin","operator"]}>
+        <IncidentForm/>
+      </RoleRoute>
+    ),
+  },
+  {
+    path: "/incidents/:id",
+    element: <IncidentDetails/>,
   },
   {
     path: "/admin/register",
