@@ -25,11 +25,13 @@ const incidentSchema = new mongoose.Schema({
         default: "medium",
     },
     createdBy:{
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user',
         required: true
     },
     assignedTo:{
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user',
         required: true,
     },
     resolvedAt:{
