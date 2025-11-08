@@ -9,10 +9,10 @@ import LoginPage from './pages/LoginPage.jsx'
 import IncidentsList from './pages/IncidentsList.jsx'
 import IncidentForm from './pages/IncidentForm.jsx'
 import IncidentDetails from './pages/IncidentDetails.jsx'
+import AuditLogsPage from './pages/AuditLogsPage.jsx'  // ADD THIS
 import { AuthProvider } from './services/authProvider.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
 import RoleRoute from './components/RoleRoute.jsx'
-
 
 const router = createBrowserRouter([
   {
@@ -37,15 +37,26 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/register",
-    element:(<AdminRoute>
-      <RegisterPage/>
-    </AdminRoute>) ,
+    element: (
+      <AdminRoute>
+        <RegisterPage/>
+      </AdminRoute>
+    ),
+  },
+  {
+    path: "/admin/audit-logs",  // ADD THIS ROUTE
+    element: (
+      <AdminRoute>
+        <AuditLogsPage/>
+      </AdminRoute>
+    ),
   },
   {
     path: "/login",
     element: <LoginPage/>,
   }
 ])
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
