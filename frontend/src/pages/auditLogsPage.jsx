@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import auditService from '../services/auditService.js';
+import auditService from '../services/AuditService.js';
 import toast from 'react-hot-toast';
 
 export default function AuditLogsPage() {
