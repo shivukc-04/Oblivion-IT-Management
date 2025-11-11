@@ -42,7 +42,10 @@ const LoginPage = () => {
   }
 
   return (
-    <div data-theme="fantasy" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary/20 to-base-200">
+    <div
+      data-theme="fantasy"
+      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary/20 to-base-200"
+    >
       <div className="w-full max-w-md p-6">
         {/* Back Button */}
         <Link
@@ -53,9 +56,10 @@ const LoginPage = () => {
           Back to Home
         </Link>
 
-        {/* Card */}
+        {/* Login Card */}
         <div className="card bg-base-100 shadow-2xl border border-base-300">
           <div className="card-body">
+            {/* Header */}
             <div className="flex flex-col items-center mb-6">
               <div className="bg-secondary/10 p-3 rounded-full">
                 <LogIn className="size-6 text-secondary" />
@@ -92,6 +96,15 @@ const LoginPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+              </div>
+
+              <div className="flex justify-between items-center mb-4">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-secondary hover:underline"
+                >
+                  Forgot Password?
+                </Link>
               </div>
 
               <div className="card-actions justify-center">

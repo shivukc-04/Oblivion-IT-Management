@@ -13,6 +13,7 @@ import AuditLogsPage from './pages/auditLogsPage.jsx'  // ADD THIS
 import { AuthProvider } from './services/authProvider.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
 import RoleRoute from './components/RoleRoute.jsx'
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 
 const router = createBrowserRouter([
   {
@@ -54,6 +55,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage/>,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage/>,
   }
 ])
 
