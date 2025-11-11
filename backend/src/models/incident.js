@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 const incidentSchema = new mongoose.Schema({
     ticketId:{
         type: String,
@@ -17,12 +17,12 @@ const incidentSchema = new mongoose.Schema({
     status:{
         type: String,
         required: true,
-        enum: ["open", "inProgress", "resolved"],
+        enum: ['open', 'inProgress', 'resolved'],
     },
     priority:{
         type: String,
-        enum: ["lowest", "low", "medium", "high", "highest"],
-        default: "medium",
+        enum: ['lowest', 'low', 'medium', 'high', 'highest'],
+        default: 'medium',
     },
     createdBy:{
         type: mongoose.Schema.Types.ObjectId,
@@ -37,7 +37,7 @@ const incidentSchema = new mongoose.Schema({
     resolvedAt:{
         type: Date,
     },
-}, {timestamps: true})
+}, {timestamps: true});
 
-const incident = mongoose.model("incident", incidentSchema)
-export default incident
+const incident = mongoose.model('incident', incidentSchema);
+export default incident;
