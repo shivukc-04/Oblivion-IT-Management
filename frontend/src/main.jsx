@@ -9,7 +9,7 @@ import LoginPage from './pages/LoginPage.jsx'
 import IncidentsList from './pages/IncidentsList.jsx'
 import IncidentForm from './pages/IncidentForm.jsx'
 import IncidentDetails from './pages/IncidentDetails.jsx'
-import AuditLogsPage from './pages/AuditLogsPage.jsx'  // ADD THIS
+import AuditLogsPage from './pages/auditLogsPage.jsx'  // ADD THIS
 import { AuthProvider } from './services/authProvider.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
 import RoleRoute from './components/RoleRoute.jsx'
