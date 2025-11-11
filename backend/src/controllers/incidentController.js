@@ -1,4 +1,4 @@
-import { configDotenv } from 'dotenv';
+
 import mongoose from 'mongoose';
 import Incident from '../models/incident.js';
 import User from '../models/user.js';
@@ -55,7 +55,9 @@ const createIncident = async (req, res) => {
       res.status(400).json({ message: 'Invalid incident data' });
     }
   } catch (error) {
-    console.error(error);
+    if (process.env.NODE_ENV !== 'test') {
+      console.error(error);
+    }
     res.status(500).json({ message: 'Server error while creating incident' });
   }
 };
@@ -74,7 +76,9 @@ const getAllIncidents = async (req, res) => {
       .sort({ createdAt: -1 });
     res.status(200).json(incidents);
   } catch (error) {
-    console.error(error);
+    if (process.env.NODE_ENV !== 'test') {
+      console.error(error);
+    }
     res.status(500).json({ message: 'Server error while fetching incidents' });
   }
 };
@@ -100,7 +104,9 @@ const getIncidentById = async (req, res) => {
       res.status(404).json({ message: 'Incident not found' });
     }
   } catch (error) {
-    console.error(error);
+    if (process.env.NODE_ENV !== 'test') {
+      console.error(error);
+    }
     res.status(500).json({ message: 'Server error while fetching incident' });
   }
 };
@@ -162,7 +168,9 @@ const updateIncident = async (req, res) => {
     
     res.status(200).json(updatedIncident);
   } catch (error) {
-    console.error(error);
+    if (process.env.NODE_ENV !== 'test') {
+      console.error(error);
+    }
     res.status(500).json({ message: 'Server error while updating incident' });
   }
 };
@@ -183,7 +191,9 @@ const deleteIncident = async (req, res) => {
       res.status(404).json({ message: 'Incident not found' });
     }
   } catch (error) {
-    console.error(error);
+    if (process.env.NODE_ENV !== 'test') {
+      console.error(error);
+    }
     res.status(500).json({ message: 'Server error while deleting incident' });
   }
 };

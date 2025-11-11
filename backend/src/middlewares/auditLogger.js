@@ -5,7 +5,7 @@ import auditLog from '../models/auditLog.js';
  * Captures: method, path, IP, userId, timestamp, response status
  */
 export const auditLogger = async (req, res, next) => {
-    console.log('🔍 Audit logger middleware called:', req.method, req.path);
+    // console.log('Audit logger middleware called:', req.method, req.path);
     
     const startTime = Date.now();
 
@@ -19,15 +19,15 @@ export const auditLogger = async (req, res, next) => {
         queryParams: req.query || {},
     };
 
-    console.log('📋 Log data prepared:', JSON.stringify(logData, null, 2));
+    // console.log('Log data prepared:', JSON.stringify(logData, null, 2));
 
     // Capture userId if user is authenticated (from verifyToken middleware)
     if (req.user) {
         logData.userId = req.user.userId || req.user.id;
         logData.userEmail = req.user.email;
-        console.log('✅ User authenticated:', logData.userId);
+        // console.log('User authenticated:', logData.userId);
     } else {
-        console.log('❌ No user authenticated');
+        // console.log('No user authenticated');
     }
 
     // Determine event type based on path and method
@@ -44,16 +44,18 @@ export const auditLogger = async (req, res, next) => {
             logData.statusCode = res.statusCode;
             logData.responseTime = Date.now() - startTime;
 
-            console.log('💾 Attempting to save audit log...');
-            console.log('Data to save:', JSON.stringify(logData, null, 2));
+            // console.log('Attempting to save audit log...');
+            // console.log('Data to save:', JSON.stringify(logData, null, 2));
 
             // Save to MongoDB (non-blocking)
-            const savedLog = await auditLog.create(logData);
-            console.log('✅ Audit log saved successfully! ID:', savedLog._id);
+            await auditLog.create(logData);
+            // console.log('Audit log saved successfully! ID:', savedLog._id);
         } catch (error) {
             // Log error but don't break the application
-            console.error('❌ Audit logging error:', error.message);
-            console.error('Full error:', error);
+            if (process.env.NODE_ENV !== 'test') {
+                console.error('Audit logging error:', error.message);
+                console.error('Full error:', error);
+            }
         }
     });
 
@@ -65,9 +67,11 @@ export const auditLogger = async (req, res, next) => {
             logData.responseTime = Date.now() - startTime;
 
             await auditLog.create(logData);
-            console.log('✅ Error audit log saved');
+            // console.log('Error audit log saved');
         } catch (err) {
-            console.error('❌ Audit logging error on error handler:', err.message);
+            if (process.env.NODE_ENV !== 'test') {
+                console.error('Audit logging error on error handler:', err.message);
+            }
         }
     });
 

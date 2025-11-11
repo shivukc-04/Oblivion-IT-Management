@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const auditLogSchema = new mongoose.Schema({
     // User Information (NOT REQUIRED - can be null for unauthenticated requests)
@@ -28,8 +28,8 @@ const auditLogSchema = new mongoose.Schema({
     // Event Type (for special events like Login/Logout)
     eventType: {
         type: String,
-        enum: ["Login", "Logout", "Create", "Update", "Delete", "View", "Other"],
-        default: "Other"
+        enum: ['Login', 'Logout', 'Create', 'Update', 'Delete', 'View', 'Other'],
+        default: 'Other'
     },
     
     // Network Information
@@ -77,7 +77,7 @@ const auditLogSchema = new mongoose.Schema({
         default: null
     }
     
-}, { timestamps: true })
+}, { timestamps: true });
 
 // Indexes for better query performance
 auditLogSchema.index({ userId: 1, createdAt: -1 });
@@ -85,5 +85,5 @@ auditLogSchema.index({ method: 1, createdAt: -1 });
 auditLogSchema.index({ ip: 1, createdAt: -1 });
 auditLogSchema.index({ eventType: 1, createdAt: -1 });
 
-const auditLog = mongoose.model("auditLog", auditLogSchema);
+const auditLog = mongoose.model('auditLog', auditLogSchema);
 export default auditLog;
