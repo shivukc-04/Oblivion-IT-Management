@@ -116,48 +116,5 @@ export async function handleForgotPassword(req, res) {
     }
 }
 
-export async function handleForgotPassword(req, res) {
-    try {
-        const { userId, email } = req.body;
-        
-        // Verify the user exists and matches the email
-        const user = await User.findOne({ userId: userId, email: email });
-        if (!user) {
-            return res.status(404).json({ "message": "User not found or email doesn't match" });
-        }
 
-        // Find all admin users
-        const adminUsers = await User.find({ role: "admin" });
-        if (!adminUsers || adminUsers.length === 0) {
-            return res.status(500).json({ "message": "No admin users found in the system" });
-        }
 
-        // Prepare email content
-        const mailOptions = {
-            from: "noreply@oblivion-itim.com",
-            to: adminUsers.map(admin => admin.email).join(','),
-            subject: 'Password Reset Request',
-            text: `A password reset has been requested for:
-            User ID: ${userId}
-            Username: ${user.username}
-            Email: ${email}
-            
-            Please contact the user at ${email} to assist with their password reset request.
-            
-            This email was sent automatically by the system. Do not reply to this email.`
-        };
-
-        // Send email
-        await transporter.sendMail(mailOptions);
-
-        return res.status(200).json({ 
-            "message": "Password reset request has been sent to administrators" 
-        });
-
-    } catch (error) {
-        console.error('Forgot password error:', error);
-        return res.status(500).json({ 
-            "message": "Error processing forgot password request" 
-        });
-    }
-}
