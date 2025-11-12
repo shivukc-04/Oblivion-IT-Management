@@ -5,6 +5,7 @@ import authRouter from './src/routes/authRouter.js';
 import usersRouter from './src/routes/usersRouter.js'
 import incidentRouter from './src/routes/incidentRouter.js';
 import auditRouter from './src/routes/auditRouter.js';  // ADD THIS
+import metricRouter from './src/routes/metricRouter.js'
 import cors from 'cors'
 import { verifyToken } from './src/middlewares/verifyToken.js';
 import { authorizeRoles } from './src/middlewares/authorizeRoles.js';
@@ -37,6 +38,7 @@ app.use("/api/auth", authRouter)
 app.use("/api/users", verifyToken, authorizeRoles("admin", "operator") , usersRouter)
 app.use("/api/incidents", verifyToken, incidentRouter)
 app.use("/api/audit", auditRouter)  // ADD THIS LINE
+app.use("/api/metrics", metricRouter)
 
 //start server after DB connection
 connectDB(CONNECTION_URI).then(() => {

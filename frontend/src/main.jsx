@@ -6,6 +6,7 @@ import './index.css'
 import App from './App.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
+import Dashboard from './pages/dashboard.jsx'
 import IncidentsList from './pages/IncidentsList.jsx'
 import IncidentForm from './pages/IncidentForm.jsx'
 import IncidentDetails from './pages/IncidentDetails.jsx'
@@ -59,6 +60,15 @@ const router = createBrowserRouter([
   {
     path: "/forgot-password",
     element: <ForgotPasswordPage/>,
+  }
+,
+  {
+    path: "/dashboard",
+    element: (
+      <AdminRoute>
+        <Dashboard/>
+      </AdminRoute>
+    )
   }
 ])
 
