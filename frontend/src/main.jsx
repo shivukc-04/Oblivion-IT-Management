@@ -70,15 +70,6 @@ const router = createBrowserRouter([
       </AdminRoute>
     )
   }
-,
-  {
-    path: "/dashboard",
-    element: (
-      <AdminRoute>
-        <Dashboard/>
-      </AdminRoute>
-    )
-  }
 ])
 
 createRoot(document.getElementById('root')).render(
