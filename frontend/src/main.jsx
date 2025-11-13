@@ -11,6 +11,7 @@ import IncidentsList from './pages/IncidentsList.jsx'
 import IncidentForm from './pages/IncidentForm.jsx'
 import IncidentDetails from './pages/IncidentDetails.jsx'
 import AuditLogsPage from './pages/auditLogsPage.jsx'  // ADD THIS
+import ServersPage from './pages/ServersPage.jsx'
 import { AuthProvider } from './services/authProvider.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
 import RoleRoute from './components/RoleRoute.jsx'
@@ -52,6 +53,14 @@ const router = createBrowserRouter([
         <AuditLogsPage/>
       </AdminRoute>
     ),
+  },
+  {
+    path: "/admin/servers",
+    element: (
+      <AdminRoute>
+        <ServersPage />
+      </AdminRoute>
+    )
   },
   {
     path: "/login",

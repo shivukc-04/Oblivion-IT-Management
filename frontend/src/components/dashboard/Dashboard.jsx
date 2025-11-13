@@ -1,23 +1,25 @@
 import React, { useEffect, useState, useRef } from 'react'
 import api from '../../services/axiosConfig'
+import serversApi from '../../services/serversService'
 import StatsCard from './StatsCard'
 import MetricChart from './MetricChart'
 import toast from 'react-hot-toast'
 
 export default function Dashboard() {
-  const [serverMetrics, setServerMetrics] = useState({
-    'server-1': { cpu: 0, memory: 0, disk: 0 },
-    'server-2': { cpu: 0, memory: 0, disk: 0 },
-    'server-3': { cpu: 0, memory: 0, disk: 0 }
-  })
-  const [serverHistory, setServerHistory] = useState({
-    'server-1': [],
-    'server-2': [],
-    'server-3': []
-  })
+  // Start empty — we'll populate dynamically from API responses
+  const [servers, setServers] = useState([])
+  const [serverMetrics, setServerMetrics] = useState({})
+  const [serverHistory, setServerHistory] = useState({})
   const [loading, setLoading] = useState(true)
   const [showGraphOnly, setShowGraphOnly] = useState(false)
-  const [activeServer, setActiveServer] = useState('server-1')
+  const [activeServer, setActiveServer] = useState(null)
+  const activeServerRef = useRef(null)
+
+  // helper to set active server state and keep a ref in sync so intervals/readers use latest
+  const selectActiveServer = (id) => {
+    setActiveServer(id)
+    activeServerRef.current = id
+  }
 
   // Prevent overlapping fetches for the frequent current-metrics polling
   const isFetchingCurrent = useRef(false)
@@ -35,7 +37,7 @@ export default function Dashboard() {
         currentResponse.data.forEach(m => {
           newMetrics[m.serverId] = { cpu: m.cpu, memory: m.memory, disk: m.disk }
         })
-        setServerMetrics(newMetrics)
+        setServerMetrics(prev => ({ ...prev, ...newMetrics }))
       } else {
         // Single server response
         setServerMetrics(prev => ({
@@ -63,22 +65,34 @@ export default function Dashboard() {
   }
 
   const fetchHistory = async () => {
+    return fetchHistoryFor(activeServer)
+  }
+
+  const fetchHistoryFor = async (serverId) => {
+    if (!serverId) return
     try {
-      const historyResponse = await api.get('/metrics/history')
-      console.log('Received metric history:', historyResponse.data)
-      // Handle both map (all servers) and array (single server) response
-      if (Array.isArray(historyResponse.data)) {
-        // Single server response
-        setServerHistory(prev => ({
-          ...prev,
-          [activeServer]: historyResponse.data
-        }))
-      } else {
-        // Multiple servers response (object/map)
-        setServerHistory(historyResponse.data)
-      }
+      const historyResponse = await api.get(`/metrics/history?serverId=${encodeURIComponent(serverId)}`)
+      console.log(`Received metric history for ${serverId}:`, historyResponse.data)
+      setServerHistory(prev => ({
+        ...prev,
+        [serverId]: historyResponse.data
+      }))
     } catch (error) {
-      console.error('Error fetching metric history:', error)
+      console.error('Error fetching metric history for', serverId, error)
+    }
+  }
+
+  const fetchServers = async () => {
+    try {
+      const list = await serversApi.getServers()
+      setServers(list || [])
+      if (!activeServer && list && list.length) {
+        selectActiveServer(list[0].serverId)
+      }
+      return list
+    } catch (err) {
+      console.error('Failed to load servers', err)
+      return []
     }
   }
 
@@ -86,7 +100,11 @@ export default function Dashboard() {
     // Initial full load
     const boot = async () => {
       setLoading(true)
-      await Promise.all([fetchCurrent(), fetchHistory()])
+      // load servers first so we can select a server for history
+      const list = await fetchServers()
+      const initialServerId = (list && list.length && list[0].serverId) || null
+      if (initialServerId) selectActiveServer(initialServerId)
+      await Promise.all([fetchCurrent(), fetchHistoryFor(initialServerId)])
       setLoading(false)
       initialLoad.current = false
     }
@@ -94,8 +112,8 @@ export default function Dashboard() {
 
     // Poll current metrics every 2 seconds
     const currentInterval = setInterval(fetchCurrent, 2000)
-    // Poll history less frequently (every 30s)
-    const historyInterval = setInterval(fetchHistory, 30000)
+  // Poll history less frequently (every 30s)
+  const historyInterval = setInterval(() => fetchHistoryFor(activeServerRef.current), 30000)
 
     return () => {
       clearInterval(currentInterval)
@@ -137,7 +155,10 @@ export default function Dashboard() {
     <div data-theme="fantasy" className="min-h-screen bg-base-200 p-6">
       <div className="container mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <div>
+            <h1 className="text-2xl font-bold">Dashboard</h1>
+            {activeServer && <div className="text-sm text-gray-500">Server ID: <span className="font-medium">{activeServer}</span></div>}
+          </div>
           <div className="space-x-2">
             <button 
               onClick={toggleView} 
@@ -149,17 +170,24 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Server Tabs */}
+        {/* Server Tabs (from canonical server list) */}
         <div className="tabs tabs-boxed mb-6 bg-base-300 p-2">
-          {['server-1', 'server-2', 'server-3'].map(serverId => (
-            <button
-              key={serverId}
-              onClick={() => setActiveServer(serverId)}
-              className={`tab ${activeServer === serverId ? 'tab-active' : ''}`}
-            >
-              {serverId.toUpperCase()}
-            </button>
-          ))}
+          {servers.length === 0 ? (
+            <div className="text-sm text-gray-500 px-3">No servers yet</div>
+          ) : (
+            servers.map(s => (
+              <button
+                key={s.serverId}
+                onClick={() => {
+                  selectActiveServer(s.serverId)
+                  fetchHistoryFor(s.serverId)
+                }}
+                className={`tab ${activeServer === s.serverId ? 'tab-active' : ''}`}
+              >
+                {s.serverId}
+              </button>
+            ))
+          )}
         </div>
 
         {showStatsCards && (
@@ -193,9 +221,9 @@ export default function Dashboard() {
           className={graphContainerClass}
           style={showGraphOnly ? { height: '80vh' } : {}}
         >
-          <MetricChart title={`${activeServer} - CPU (last 20)`} data={formatMetricHistory().map(s=>s.cpu)} color="#ef4444" />
-          <MetricChart title={`${activeServer} - Memory (last 20)`} data={formatMetricHistory().map(s=>s.memory)} color="#f59e0b" />
-          <MetricChart title={`${activeServer} - Disk (last 20)`} data={formatMetricHistory().map(s=>s.disk)} color="#10b981" />
+          <MetricChart title={`${activeServer || 'Server'} - CPU (last 20)`} data={formatMetricHistory().map(s=>s.cpu)} color="#ef4444" />
+          <MetricChart title={`${activeServer || 'Server'} - Memory (last 20)`} data={formatMetricHistory().map(s=>s.memory)} color="#f59e0b" />
+          <MetricChart title={`${activeServer || 'Server'} - Disk (last 20)`} data={formatMetricHistory().map(s=>s.disk)} color="#10b981" />
         </div>
       </div>
     </div>

@@ -20,11 +20,12 @@ export async function sendAlertEmail(type, metricObj) {
     const adminUsers = await User.find({ role: "admin" });
     if (!adminUsers || adminUsers.length === 0) return; // No admins, abort
 
-    const { cpu, memory, disk } = metricObj;
-    let subject = `[${type}] Server Metric Alert`;
+    const { cpu, memory, disk, serverId } = metricObj;
+    let subject = `[${type}] Server Metric Alert - ${serverId || 'unknown-server'}`;
     let levelText = type === "SERIOUS" ? "Serious Alert" : "Warning";
-    let message = `${levelText}: One or more server metrics exceeded the threshold.
+    let message = `${levelText}: One or more server metrics exceeded the threshold for server ${serverId || 'unknown-server'}.
 
+Server ID: ${serverId || 'unknown-server'}
 CPU: ${cpu}%
 Memory: ${memory}%
 Disk: ${disk}%
