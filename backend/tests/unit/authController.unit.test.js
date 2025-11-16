@@ -3,8 +3,10 @@ import { jest } from '@jest/globals';
 // Mock modules before importing them
 const mockSave = jest.fn();
 const mockFindOne = jest.fn();
+const mockFind = jest.fn();
 const mockCompare = jest.fn();
 const mockSign = jest.fn();
+const mockSendMail = jest.fn();
 
 // Mock User model - KEY FIX: Export both the constructor and static methods
 jest.unstable_mockModule('../../src/models/user.js', () => ({
@@ -13,7 +15,8 @@ jest.unstable_mockModule('../../src/models/user.js', () => ({
       save: mockSave
     })),
     {
-      findOne: mockFindOne
+      findOne: mockFindOne,
+      find: mockFind
     }
   )
 }));
@@ -34,8 +37,17 @@ jest.unstable_mockModule('jsonwebtoken', () => ({
   sign: mockSign
 }));
 
+// Mock nodemailer
+jest.unstable_mockModule('nodemailer', () => ({
+  default: {
+    createTransport: jest.fn(() => ({
+      sendMail: mockSendMail
+    }))
+  }
+}));
+
 // Import after mocking
-const { createNewUser, handleUserLogin } = await import('../../src/controllers/authController.js');
+const { createNewUser, handleUserLogin, handleForgotPassword } = await import('../../src/controllers/authController.js');
 const User = (await import('../../src/models/user.js')).default;
 const bcrypt = await import('bcrypt');
 const jwt = await import('jsonwebtoken');
@@ -48,8 +60,10 @@ describe('AuthController Unit Tests', () => {
     jest.clearAllMocks();
     mockSave.mockReset();
     mockFindOne.mockReset();
+    mockFind.mockReset();
     mockCompare.mockReset();
     mockSign.mockReset();
+    mockSendMail.mockReset();
     
     // Setup request and response objects
     req = {
@@ -64,6 +78,8 @@ describe('AuthController Unit Tests', () => {
     // Mock environment variables
     process.env.JWT_SECRET_KEY = 'test-secret-key';
     process.env.JWT_TOKEN_TTL = '1h';
+    process.env.MAILTRAP_USER = 'test-user';
+    process.env.MAILTRAP_PASSWORD = 'test-password';
   });
 
   describe('createNewUser', () => {
@@ -358,6 +374,238 @@ describe('AuthController Unit Tests', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ message: "error finding the user" });
+    });
+  });
+
+  describe('handleForgotPassword', () => {
+    const mockUser = {
+      _id: 'mockId123',
+      userId: 'user123',
+      username: 'testuser',
+      email: 'test@example.com',
+      role: 'user'
+    };
+
+    const mockAdmins = [
+      {
+        _id: 'adminId1',
+        userId: 'admin1',
+        username: 'admin1',
+        email: 'admin1@example.com',
+        role: 'admin'
+      },
+      {
+        _id: 'adminId2',
+        userId: 'admin2',
+        username: 'admin2',
+        email: 'admin2@example.com',
+        role: 'admin'
+      }
+    ];
+
+    it('should send password reset email to admins successfully', async () => {
+      req.body = {
+        userId: 'user123',
+        email: 'test@example.com'
+      };
+
+      mockFindOne.mockResolvedValue(mockUser);
+      mockFind.mockResolvedValue(mockAdmins);
+      mockSendMail.mockResolvedValue({ messageId: 'test-message-id' });
+
+      await handleForgotPassword(req, res);
+
+      expect(mockFindOne).toHaveBeenCalledWith({ 
+        userId: 'user123', 
+        email: 'test@example.com' 
+      });
+      expect(mockFind).toHaveBeenCalledWith({ role: 'admin' });
+      expect(mockSendMail).toHaveBeenCalledWith({
+        from: 'noreply@oblivion-itim.com',
+        to: 'admin1@example.com,admin2@example.com',
+        subject: 'Password Reset Request',
+        text: expect.stringContaining('User ID: user123')
+      });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Password reset request has been sent to administrators'
+      });
+    });
+
+    it('should send email to single admin when only one exists', async () => {
+      req.body = {
+        userId: 'user123',
+        email: 'test@example.com'
+      };
+
+      mockFindOne.mockResolvedValue(mockUser);
+      mockFind.mockResolvedValue([mockAdmins[0]]);
+      mockSendMail.mockResolvedValue({ messageId: 'test-message-id' });
+
+      await handleForgotPassword(req, res);
+
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'admin1@example.com'
+        })
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('should return 404 when user is not found', async () => {
+      req.body = {
+        userId: 'nonexistent',
+        email: 'test@example.com'
+      };
+
+      mockFindOne.mockResolvedValue(null);
+
+      await handleForgotPassword(req, res);
+
+      expect(mockFindOne).toHaveBeenCalledWith({ 
+        userId: 'nonexistent', 
+        email: 'test@example.com' 
+      });
+      expect(mockFind).not.toHaveBeenCalled();
+      expect(mockSendMail).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "User not found or email doesn't match"
+      });
+    });
+
+    it('should return 404 when email does not match user', async () => {
+      req.body = {
+        userId: 'user123',
+        email: 'wrong@example.com'
+      };
+
+      mockFindOne.mockResolvedValue(null);
+
+      await handleForgotPassword(req, res);
+
+      expect(mockFindOne).toHaveBeenCalledWith({ 
+        userId: 'user123', 
+        email: 'wrong@example.com' 
+      });
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "User not found or email doesn't match"
+      });
+    });
+
+    it('should return 500 when no admin users exist', async () => {
+      req.body = {
+        userId: 'user123',
+        email: 'test@example.com'
+      };
+
+      mockFindOne.mockResolvedValue(mockUser);
+      mockFind.mockResolvedValue([]);
+
+      await handleForgotPassword(req, res);
+
+      expect(mockFindOne).toHaveBeenCalled();
+      expect(mockFind).toHaveBeenCalledWith({ role: 'admin' });
+      expect(mockSendMail).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'No admin users found in the system'
+      });
+    });
+
+    it('should return 500 when admin query returns null', async () => {
+      req.body = {
+        userId: 'user123',
+        email: 'test@example.com'
+      };
+
+      mockFindOne.mockResolvedValue(mockUser);
+      mockFind.mockResolvedValue(null);
+
+      await handleForgotPassword(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'No admin users found in the system'
+      });
+    });
+
+    it('should return 500 when email sending fails', async () => {
+      req.body = {
+        userId: 'user123',
+        email: 'test@example.com'
+      };
+
+      mockFindOne.mockResolvedValue(mockUser);
+      mockFind.mockResolvedValue(mockAdmins);
+      mockSendMail.mockRejectedValue(new Error('Email service error'));
+
+      await handleForgotPassword(req, res);
+
+      expect(mockSendMail).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Error processing forgot password request'
+      });
+    });
+
+    it('should return 500 when database error occurs while finding user', async () => {
+      req.body = {
+        userId: 'user123',
+        email: 'test@example.com'
+      };
+
+      mockFindOne.mockRejectedValue(new Error('Database error'));
+
+      await handleForgotPassword(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Error processing forgot password request'
+      });
+    });
+
+    it('should return 500 when database error occurs while finding admins', async () => {
+      req.body = {
+        userId: 'user123',
+        email: 'test@example.com'
+      };
+
+      mockFindOne.mockResolvedValue(mockUser);
+      mockFind.mockRejectedValue(new Error('Database error'));
+
+      await handleForgotPassword(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Error processing forgot password request'
+      });
+    });
+
+    it('should include correct user details in email content', async () => {
+      req.body = {
+        userId: 'user123',
+        email: 'test@example.com'
+      };
+
+      mockFindOne.mockResolvedValue(mockUser);
+      mockFind.mockResolvedValue(mockAdmins);
+      mockSendMail.mockResolvedValue({ messageId: 'test-message-id' });
+
+      await handleForgotPassword(req, res);
+
+      expect(mockSendMail).toHaveBeenCalledWith({
+        from: 'noreply@oblivion-itim.com',
+        to: 'admin1@example.com,admin2@example.com',
+        subject: 'Password Reset Request',
+        text: expect.stringMatching(/User ID: user123/)
+      });
+      
+      const emailCall = mockSendMail.mock.calls[0][0];
+      expect(emailCall.text).toContain('User ID: user123');
+      expect(emailCall.text).toContain('Username: testuser');
+      expect(emailCall.text).toContain('Email: test@example.com');
     });
   });
 });
