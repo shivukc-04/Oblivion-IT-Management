@@ -27,7 +27,7 @@ const RegisterPage = () => {
               toast.error("user already exists")
               return
             }
-            if (err.response?.status === 403) {
+            if (error.response?.status === 403) {
               toast.error('Access denied. Insufficient Role');
               navigate('/');
               return;

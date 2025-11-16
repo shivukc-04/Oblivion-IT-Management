@@ -1,13 +1,13 @@
-import User from '../models/user.js'
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import dotenv from 'dotenv'
-import nodemailer from 'nodemailer'
-dotenv.config()
+import User from '../models/user.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+import nodemailer from 'nodemailer';
+dotenv.config();
 
 // Configure nodemailer transporter with Mailtrap
 const transporter = nodemailer.createTransport({
-    host: "sandbox.smtp.mailtrap.io",
+    host: 'sandbox.smtp.mailtrap.io',
     port: 2525,
     auth: {
         user: process.env.MAILTRAP_USER,
@@ -77,18 +77,18 @@ export async function handleForgotPassword(req, res) {
         // Verify the user exists and matches the email
         const user = await User.findOne({ userId: userId, email: email });
         if (!user) {
-            return res.status(404).json({ "message": "User not found or email doesn't match" });
+            return res.status(404).json({ 'message': 'User not found or email doesn\'t match' });
         }
 
         // Find all admin users
-        const adminUsers = await User.find({ role: "admin" });
+        const adminUsers = await User.find({ role: 'admin' });
         if (!adminUsers || adminUsers.length === 0) {
-            return res.status(500).json({ "message": "No admin users found in the system" });
+            return res.status(500).json({ 'message': 'No admin users found in the system' });
         }
 
         // Prepare email content
         const mailOptions = {
-            from: "noreply@oblivion-itim.com",
+            from: 'noreply@oblivion-itim.com',
             to: adminUsers.map(admin => admin.email).join(','),
             subject: 'Password Reset Request',
             text: `A password reset has been requested for:
@@ -105,13 +105,13 @@ export async function handleForgotPassword(req, res) {
         await transporter.sendMail(mailOptions);
 
         return res.status(200).json({ 
-            "message": "Password reset request has been sent to administrators" 
+            'message': 'Password reset request has been sent to administrators' 
         });
 
     } catch (error) {
         console.error('Forgot password error:', error);
         return res.status(500).json({ 
-            "message": "Error processing forgot password request" 
+            'message': 'Error processing forgot password request' 
         });
     }
 }
