@@ -106,19 +106,34 @@ export default function AuditLogsPage() {
 		return colors[eventType] || "badge-neutral";
 	}
 
-	if (loading && logs.length === 0) {
-		return <div className="p-6">Loading audit logs...</div>;
-	}
-
-	return (
-		<div className="p-6 min-h-screen bg-base-200">
-			{/* Header */}
-			<div className="mb-6">
-				<h1 className="text-3xl font-bold">Audit Logs</h1>
-				<p className="text-sm text-gray-500">
-					View and filter all system activity logs
-				</p>
-			</div>
+  return (
+    <div className="p-6 min-h-screen bg-base-200">
+      
+      {/* Header */}
+      <div className="mb-6">
+            <button 
+              onClick={() => navigate('/')} 
+              className="btn btn-ghost"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back
+            </button>
+        <h1 className="text-3xl font-bold">Audit Logs</h1>
+        <p className="text-sm text-gray-500">View and filter all system activity logs</p>
+      </div>
+      {/* Statistics Cards */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="card bg-base-100 shadow-md">
+            <div className="card-body">
+              <h2 className="card-title text-sm">Total Requests</h2>
+              <p className="text-3xl font-bold">
+                {stats.totalRequests[0]?.total || 0}
+              </p>
+            </div>
+          </div>
 
 			{/* Statistics Cards */}
 			{stats && (

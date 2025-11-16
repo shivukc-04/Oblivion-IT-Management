@@ -12,12 +12,16 @@
   },
   "dependencies": {
     "axios": "^1.12.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.3",
+    "jspdf-autotable": "^5.0.2",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.548.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hot-toast": "^2.6.0",
-    "react-router-dom": "^7.9.4"
+    "react-router-dom": "^7.9.4",
+    "recharts": "^3.4.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.5",
