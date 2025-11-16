@@ -3,16 +3,21 @@ import { createRoot } from "react-dom/client";
 import { Toaster } from "react-hot-toast";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
+
+// Pages & Components
 import App from "./App.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import Dashboard from "./pages/dashboard.jsx";
+import IncidentsList from "./pages/IncidentsList.jsx";
+import IncidentForm from "./pages/IncidentForm.jsx";
+import IncidentDetails from "./pages/IncidentDetails.jsx";
+import AuditLogsPage from "./pages/auditLogsPage.jsx";
+import ServersPage from "./pages/ServersPage.jsx";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
+
 import AdminRoute from "./components/AdminRoute.jsx";
 import RoleRoute from "./components/RoleRoute.jsx";
-import AuditLogsPage from "./pages/auditLogsPage.jsx"; // ADD THIS
-import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
-import IncidentDetails from "./pages/IncidentDetails.jsx";
-import IncidentForm from "./pages/IncidentForm.jsx";
-import IncidentsList from "./pages/IncidentsList.jsx";
-import LoginPage from "./pages/LoginPage.jsx";
-import RegisterPage from "./pages/RegisterPage.jsx";
 import { AuthProvider } from "./services/authProvider.jsx";
 
 const router = createBrowserRouter([
@@ -45,10 +50,26 @@ const router = createBrowserRouter([
 		),
 	},
 	{
-		path: "/admin/audit-logs", // ADD THIS ROUTE
+		path: "/admin/audit-logs",
 		element: (
 			<AdminRoute>
 				<AuditLogsPage />
+			</AdminRoute>
+		),
+	},
+	{
+		path: "/admin/servers",
+		element: (
+			<AdminRoute>
+				<ServersPage />
+			</AdminRoute>
+		),
+	},
+	{
+		path: "/dashboard",
+		element: (
+			<AdminRoute>
+				<Dashboard />
 			</AdminRoute>
 		),
 	},
@@ -62,11 +83,13 @@ const router = createBrowserRouter([
 	},
 ]);
 
-createRoot(document.getElementById("root")).render(
+const root = createRoot(document.getElementById("root"));
+
+root.render(
 	<StrictMode>
 		<AuthProvider>
 			<RouterProvider router={router} />
 			<Toaster />
 		</AuthProvider>
-	</StrictMode>,
+	</StrictMode>
 );

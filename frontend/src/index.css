@@ -1,3 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom styles for focusing on graphs */
+.full-page-graphs {
+  /* Overrides Tailwind to force a single column layout */
+  grid-template-columns: 1fr; 
+  
+  /* Adds extra space between the stacked graphs */
+  gap: 1.5rem; 
+
+  /* This is now optional but helps set the overall floor height */
+  min-height: 80vh; 
+}
+
+/* KEY CSS: Make the individual chart containers fill the height of the grid */
+.full-page-graphs > div {
+  height: 100%; 
+  min-height: 450px; 
+}
+
+/* FINAL FIX (if needed): Force the internal chart element (canvas/svg) to fill its wrapper */
+.full-page-graphs canvas,
+.full-page-graphs svg {
+    height: 100% !important; 
+    width: 100% !important;
+}
