@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../../services/axiosConfig'
 import serversApi from '../../services/serversService'
 import StatsCard from './StatsCard'
@@ -6,7 +7,8 @@ import MetricChart from './MetricChart'
 import toast from 'react-hot-toast'
 
 export default function Dashboard() {
-  // Start empty — we'll populate dynamically from API responses
+  const navigate = useNavigate()
+  // Start empty – we'll populate dynamically from API responses
   const [servers, setServers] = useState([])
   const [serverMetrics, setServerMetrics] = useState({})
   const [serverHistory, setServerHistory] = useState({})
@@ -160,6 +162,24 @@ export default function Dashboard() {
             {activeServer && <div className="text-sm text-gray-500">Server ID: <span className="font-medium">{activeServer}</span></div>}
           </div>
           <div className="space-x-2">
+            <button 
+              onClick={() => navigate('/')} 
+              className="btn btn-ghost"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back
+            </button>
+            <button 
+              onClick={() => navigate('/trends')} 
+              className="btn btn-info"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Trends
+            </button>
             <button 
               onClick={toggleView} 
               className="btn btn-outline"

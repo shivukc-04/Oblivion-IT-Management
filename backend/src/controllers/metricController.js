@@ -64,3 +64,18 @@ export const getMetricHistory = async (req, res) => {
         res.status(500).json({ message: "Error fetching metric history", error: error.message });
     }
 };
+export const getAllMetricHistory = async (req, res) => {
+    try {
+        // Allow client to request history for a specific serverId via query param
+        const serverId = req.query.serverId || 'main-server';
+        // Get last 160 metrics for the requested server
+        const metrics = await Metric.find({ serverId })
+            .sort({ createdAt: -1 })
+            .limit(160);
+
+        console.log(`Fetched metric history for ${serverId}, count:`, metrics.length);
+        res.json(metrics.reverse()); // Reverse to get chronological order
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching metric history", error: error.message });
+    }
+};

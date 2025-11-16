@@ -7,7 +7,7 @@ const router = express.Router();
 
 // All routes here are admin-only
 router.use(verifyToken);
-router.use(authorizeRoles('admin'));
+router.use(authorizeRoles('admin','operator'));
 
 router.post('/', createServer);
 router.get('/', listServers);
