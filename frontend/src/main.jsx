@@ -12,10 +12,11 @@ import IncidentForm from './pages/IncidentForm.jsx'
 import IncidentDetails from './pages/IncidentDetails.jsx'
 import AuditLogsPage from './pages/auditLogsPage.jsx'  // ADD THIS
 import ServersPage from './pages/ServersPage.jsx'
+import TrendAnalysis from './pages/trendPage.jsx'
 import { AuthProvider } from './services/authProvider.jsx'
-import AdminRoute from './components/AdminRoute.jsx'
 import RoleRoute from './components/RoleRoute.jsx'
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
+// import AdminRoute from './components/AdminRoute.jsx'
 
 const router = createBrowserRouter([
   {
@@ -24,7 +25,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/incidents",
-    element: <IncidentsList/>,
+    element: (
+      <RoleRoute allowedRoles={["admin","operator"]}>
+        <IncidentsList/>
+      </RoleRoute>
+    ),
   },
   {
     path: "/incidents/new",
@@ -41,25 +46,25 @@ const router = createBrowserRouter([
   {
     path: "/admin/register",
     element: (
-      <AdminRoute>
+      <RoleRoute allowedRoles={"admin"}>
         <RegisterPage/>
-      </AdminRoute>
+      </RoleRoute>
     ),
   },
   {
     path: "/admin/audit-logs",  // ADD THIS ROUTE
     element: (
-      <AdminRoute>
+      <RoleRoute allowedRoles={"admin"}>
         <AuditLogsPage/>
-      </AdminRoute>
+      </RoleRoute>
     ),
   },
   {
     path: "/admin/servers",
     element: (
-      <AdminRoute>
+      <RoleRoute allowedRoles={["admin","operator"]}>
         <ServersPage />
-      </AdminRoute>
+      </RoleRoute>
     )
   },
   {
@@ -69,14 +74,21 @@ const router = createBrowserRouter([
   {
     path: "/forgot-password",
     element: <ForgotPasswordPage/>,
-  }
-,
+  },
   {
     path: "/dashboard",
     element: (
-      <AdminRoute>
+      <RoleRoute allowedRoles={["admin","operator","viewer"]}>
         <Dashboard/>
-      </AdminRoute>
+      </RoleRoute>
+    )
+  },
+  {
+    path: "/trends",
+    element: (
+      <RoleRoute allowedRoles={["admin","operator"]}>
+        <TrendAnalysis/>
+      </RoleRoute>
     )
   }
 ])
