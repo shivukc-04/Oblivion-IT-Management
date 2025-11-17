@@ -5,6 +5,8 @@ import authRouter from './src/routes/authRouter.js';
 import usersRouter from './src/routes/usersRouter.js'
 import incidentRouter from './src/routes/incidentRouter.js';
 import auditRouter from './src/routes/auditRouter.js';  // ADD THIS
+import metricRouter from './src/routes/metricRouter.js'
+import serverRouter from './src/routes/serverRouter.js'
 import cors from 'cors'
 import { verifyToken } from './src/middlewares/verifyToken.js';
 import { authorizeRoles } from './src/middlewares/authorizeRoles.js';
@@ -22,7 +24,7 @@ if (missingEnvVars.length > 0) {
 
 const app = express();
 const PORT = process.env.PORT || 5250;
-const CONNECTION_URI = process.env.CONNECTION_URI;
+const CONNECTION_URI = process.env.CONNECTION_URI
 
 //middlewares
 app.use(cors({origin: "http://localhost:5173"}))
@@ -30,13 +32,15 @@ app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 
 // ADD AUDIT LOGGER MIDDLEWARE HERE
-app.use(auditLogger);
+app.use(auditLogger)
 
 // Routes
 app.use("/api/auth", authRouter)
 app.use("/api/users", verifyToken, authorizeRoles("admin", "operator") , usersRouter)
 app.use("/api/incidents", verifyToken, incidentRouter)
 app.use("/api/audit", auditRouter)  // ADD THIS LINE
+app.use("/api/metrics", metricRouter)
+app.use("/api/servers", serverRouter)
 
 //start server after DB connection
 connectDB(CONNECTION_URI).then(() => {
