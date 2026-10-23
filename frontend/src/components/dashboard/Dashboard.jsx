@@ -6,6 +6,8 @@ import StatsCard from './StatsCard'
 import MetricChart from './MetricChart'
 import toast from 'react-hot-toast'
 
+const FALLBACK_SERVER_ID = 'main-server'
+
 export default function Dashboard() {
   const navigate = useNavigate()
   // Start empty – we'll populate dynamically from API responses
@@ -14,8 +16,8 @@ export default function Dashboard() {
   const [serverHistory, setServerHistory] = useState({})
   const [loading, setLoading] = useState(true)
   const [showGraphOnly, setShowGraphOnly] = useState(false)
-  const [activeServer, setActiveServer] = useState(null)
-  const activeServerRef = useRef(null)
+  const [activeServer, setActiveServer] = useState(FALLBACK_SERVER_ID)
+  const activeServerRef = useRef(FALLBACK_SERVER_ID)
 
   // helper to set active server state and keep a ref in sync so intervals/readers use latest
   const selectActiveServer = (id) => {
@@ -37,14 +39,16 @@ export default function Dashboard() {
       if (Array.isArray(currentResponse.data)) {
         const newMetrics = {}
         currentResponse.data.forEach(m => {
-          newMetrics[m.serverId] = { cpu: m.cpu, memory: m.memory, disk: m.disk }
+          const serverId = m.serverId || FALLBACK_SERVER_ID
+          newMetrics[serverId] = { cpu: m.cpu, memory: m.memory, disk: m.disk }
         })
         setServerMetrics(prev => ({ ...prev, ...newMetrics }))
       } else {
         // Single server response
+        const serverId = currentResponse.data.serverId || FALLBACK_SERVER_ID
         setServerMetrics(prev => ({
           ...prev,
-          [currentResponse.data.serverId]: {
+          [serverId]: {
             cpu: currentResponse.data.cpu,
             memory: currentResponse.data.memory,
             disk: currentResponse.data.disk
@@ -87,13 +91,18 @@ export default function Dashboard() {
   const fetchServers = async () => {
     try {
       const list = await serversApi.getServers()
-      setServers(list || [])
-      if (!activeServer && list && list.length) {
-        selectActiveServer(list[0].serverId)
+      const availableServers = Array.isArray(list) ? list : []
+      setServers(availableServers)
+      if (availableServers.length > 0) {
+        selectActiveServer(availableServers[0].serverId || FALLBACK_SERVER_ID)
+      } else {
+        selectActiveServer(FALLBACK_SERVER_ID)
       }
-      return list
+      return availableServers
     } catch (err) {
       console.error('Failed to load servers', err)
+      setServers([])
+      selectActiveServer(FALLBACK_SERVER_ID)
       return []
     }
   }
@@ -104,7 +113,8 @@ export default function Dashboard() {
       setLoading(true)
       // load servers first so we can select a server for history
       const list = await fetchServers()
-      const initialServerId = (list && list.length && list[0].serverId) || null
+      const initialServerId =
+        (list && list.length && list[0].serverId) || FALLBACK_SERVER_ID
       if (initialServerId) selectActiveServer(initialServerId)
       await Promise.all([fetchCurrent(), fetchHistoryFor(initialServerId)])
       setLoading(false)
@@ -140,6 +150,12 @@ export default function Dashboard() {
 
   const formatMetricHistory = () => {
     const history = serverHistory[activeServer] || []
+    if (history.length === 0) {
+      const current = serverMetrics[activeServer]
+      return current
+        ? [{ cpu: current.cpu, memory: current.memory, disk: current.disk }]
+        : []
+    }
     return history.map(metric => ({
       timestamp: new Date(metric.createdAt).getTime(),
       cpu: metric.cpu,

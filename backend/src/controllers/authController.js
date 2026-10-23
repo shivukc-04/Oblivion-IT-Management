@@ -15,14 +15,14 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-export async function createNewUser(req, res){
+async function saveNewUser(req, res, role) {
     try {
             const body = req.body;
             const newUser = new User({
                 userId: body.userId,
                 username: body.username,
                 password: body.password,
-                role: body.role,
+                role,
                 email: body.email
             });
             await newUser.save();
@@ -36,7 +36,15 @@ export async function createNewUser(req, res){
             }
             return res.status(400).json({'message': 'user was NOT created'});
         }
-} 
+}
+
+export async function createNewUser(req, res) {
+    return saveNewUser(req, res, 'viewer');
+}
+
+export async function createAdminCreatedUser(req, res) {
+    return saveNewUser(req, res, req.body.role);
+}
 
 export async function handleUserLogin(req, res){
     try {
@@ -60,7 +68,7 @@ export async function handleUserLogin(req, res){
           email: user.email
         };
         const jwt_secret_key = process.env.JWT_SECRET_KEY;
-        const jwt_token = jwt.sign(payload, jwt_secret_key,{ expiresIn: process.env.JWT_TOKEN_TTL});
+        const jwt_token = jwt.sign(payload, jwt_secret_key,{ expiresIn: process.env.JWT_EXPIRES_IN || '24h' });
         return res.status(200).json({token: jwt_token, user: payload});
     } catch (error) {
         if (process.env.NODE_ENV !== 'test') {
@@ -115,6 +123,5 @@ export async function handleForgotPassword(req, res) {
         });
     }
 }
-
 
 

@@ -5,12 +5,10 @@ import { authorizeRoles } from '../middlewares/authorizeRoles.js';
 
 const router = express.Router();
 
-// All routes here are admin-only
 router.use(verifyToken);
-router.use(authorizeRoles('admin','operator'));
 
-router.post('/', createServer);
-router.get('/', listServers);
-router.delete('/:id', deleteServer);
+router.post('/', authorizeRoles('admin', 'operator'), createServer);
+router.get('/', authorizeRoles('admin', 'operator', 'viewer'), listServers);
+router.delete('/:id', authorizeRoles('admin', 'operator'), deleteServer);
 
 export default router;

@@ -1,75 +1,74 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import axios from 'axios';
+import { describe, it, expect, beforeEach } from 'vitest';
 import api from './axiosConfig';
-
-vi.mock('axios');
 
 describe('axiosConfig Service', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     localStorage.clear();
   });
 
   it('should create axios instance with correct baseURL', () => {
-    expect(axios.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        baseURL: 'http://localhost:5250/api',
-      })
-    );
+    expect(api.defaults.baseURL).toBe('http://localhost:5000/api');
   });
 
-  it('should add authorization token to requests when token exists', () => {
-    localStorage.setItem(
-      'authToken',
-      'test-token-123'
-    );
+  it('should add authorization token to requests when token exists', async () => {
+    localStorage.setItem('authToken', 'test-token-123');
 
-    const mockConfig = { headers: {} };
-    const interceptor = axios.create.mock.results[0].value.interceptors.request
-      .use.mock.calls[0][0];
+    const response = await api.get('/test', {
+      adapter: (config) =>
+        Promise.resolve({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+    });
 
-    const result = interceptor(mockConfig);
-
-    expect(result.headers.Authorization).toBe('Bearer test-token-123');
+    expect(response.config.headers.Authorization).toBe('Bearer test-token-123');
   });
 
-  it('should not add authorization header when no token exists', () => {
-    localStorage.removeItem('authToken');
+  it('should not add authorization header when no token exists', async () => {
+    const response = await api.get('/test', {
+      adapter: (config) =>
+        Promise.resolve({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+    });
 
-    const mockConfig = { headers: {} };
-    const interceptor = axios.create.mock.results[0].value.interceptors.request
-      .use.mock.calls[0][0];
-
-    const result = interceptor(mockConfig);
-
-    expect(result.headers.Authorization).toBeUndefined();
+    expect(response.config.headers.Authorization).toBeUndefined();
   });
 
-  it('should pass through config unchanged when token exists', () => {
+  it('should pass through request config unchanged when token exists', async () => {
     localStorage.setItem('authToken', 'my-token');
 
-    const mockConfig = {
+    const response = await api.get('/incidents', {
       headers: { 'Content-Type': 'application/json' },
-      method: 'GET',
-      url: '/incidents',
-    };
+      adapter: (config) =>
+        Promise.resolve({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        }),
+    });
 
-    const interceptor = axios.create.mock.results[0].value.interceptors.request
-      .use.mock.calls[0][0];
-
-    const result = interceptor(mockConfig);
-
-    expect(result.method).toBe('GET');
-    expect(result.url).toBe('/incidents');
-    expect(result.headers['Content-Type']).toBe('application/json');
+    expect(response.config.method).toBe('get');
+    expect(response.config.url).toBe('/incidents');
+    expect(response.config.headers['Content-Type']).toBe('application/json');
   });
 
-  it('should handle error in request interceptor', () => {
+  it('should reject errors in the request interceptor', async () => {
     const mockError = new Error('Request error');
-    const interceptor = axios.create.mock.results[0].value.interceptors.request
-      .use.mock.calls[0][1];
+    const interceptor = api.interceptors.request.handlers.find(
+      ({ fulfilled, rejected }) => fulfilled && rejected
+    );
 
-    expect(() => interceptor(mockError)).toThrow('Request error');
+    await expect(interceptor.rejected(mockError)).rejects.toBe(mockError);
   });
 
   it('should export the configured api instance', () => {

@@ -138,6 +138,6 @@ describe('MetricChart Component', () => {
     const polyline = container.querySelector('polyline');
     expect(polyline).toHaveAttribute('fill', 'none');
     expect(polyline).toHaveAttribute('stroke', '#123456');
-    expect(polyline).toHaveAttribute('strokeWidth', '2');
+    expect(polyline).toHaveAttribute('stroke-width', '2');
   });
 });

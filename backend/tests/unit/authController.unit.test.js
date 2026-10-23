@@ -88,7 +88,7 @@ describe('AuthController Unit Tests', () => {
         userId: 'user123',
         username: 'testuser',
         password: 'password123',
-        role: 'user',
+        role: 'viewer',
         email: 'test@example.com'
       };
 
@@ -100,7 +100,7 @@ describe('AuthController Unit Tests', () => {
         userId: 'user123',
         username: 'testuser',
         password: 'password123',
-        role: 'user',
+        role: 'viewer',
         email: 'test@example.com'
       });
       expect(mockSave).toHaveBeenCalled();
@@ -108,7 +108,7 @@ describe('AuthController Unit Tests', () => {
       expect(res.json).toHaveBeenCalledWith({ message: "new User created" });
     });
 
-    it('should create an admin user successfully', async () => {
+    it('should assign the viewer role even when an admin role is requested', async () => {
       req.body = {
         userId: 'admin123',
         username: 'adminuser',
@@ -125,7 +125,7 @@ describe('AuthController Unit Tests', () => {
         userId: 'admin123',
         username: 'adminuser',
         password: 'adminpass123',
-        role: 'admin',
+        role: 'viewer',
         email: 'admin@example.com'
       });
       expect(mockSave).toHaveBeenCalled();
@@ -133,7 +133,7 @@ describe('AuthController Unit Tests', () => {
       expect(res.json).toHaveBeenCalledWith({ message: "new User created" });
     });
 
-    it('should create an operator user successfully', async () => {
+    it('should assign the viewer role even when an operator role is requested', async () => {
       req.body = {
         userId: 'operator123',
         username: 'operatoruser',
@@ -150,7 +150,7 @@ describe('AuthController Unit Tests', () => {
         userId: 'operator123',
         username: 'operatoruser',
         password: 'operatorpass123',
-        role: 'operator',
+        role: 'viewer',
         email: 'operator@example.com'
       });
       expect(mockSave).toHaveBeenCalled();
@@ -163,7 +163,7 @@ describe('AuthController Unit Tests', () => {
         userId: 'user123',
         username: 'testuser',
         password: 'password123',
-        role: 'user',
+        role: 'viewer',
         email: 'test@example.com'
       };
 
@@ -180,7 +180,7 @@ describe('AuthController Unit Tests', () => {
         userId: 'user123',
         username: 'testuser',
         password: 'password123',
-        role: 'user',
+        role: 'viewer',
         email: 'test@example.com'
       };
 

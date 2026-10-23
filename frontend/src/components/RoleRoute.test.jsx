@@ -4,9 +4,9 @@ import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import RoleRoute from './RoleRoute';
 import { AuthContext } from '../services/authContext';
-import * as toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
-vi.mock('react-hot-toast');
+vi.mock('react-hot-toast', () => import('../__mocks__/react-hot-toast.js'));
 
 describe('RoleRoute Component', () => {
   const mockContextValue = (user = null, loading = false) => ({

@@ -1,14 +1,16 @@
 import axios from "axios";
 import { ArrowLeftIcon, LogIn } from "lucide-react";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import toast from "react-hot-toast";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../services/authContext.js";
 
 const LoginPage = () => {
 	const [userId, setUserId] = useState("");
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
 	const navigate = useNavigate("/");
+	const auth = useContext(AuthContext);
 
 	async function handleSubmit(e) {
 		e.preventDefault();
@@ -18,15 +20,16 @@ const LoginPage = () => {
 		}
 		setLoading(true);
 		try {
-			const res = await axios.post("http://localhost:5250/api/auth/login", {
+			const res = await axios.post("http://localhost:5000/api/auth/login", {
 				userId,
 				password,
 			});
 			const { token, user } = res.data;
 			localStorage.setItem("authToken", token);
 			localStorage.setItem("userRole", user.role);
+			auth?.login(user);
 			toast.success("You are logged in");
-			navigate("/");
+			navigate("/dashboard");
 		} catch (error) {
 			if (error.response?.status === 401) {
 				toast.error("User ID or password is incorrect");
@@ -75,10 +78,11 @@ const LoginPage = () => {
 						{/* Form */}
 						<form onSubmit={handleSubmit}>
 							<div className="form-control mb-4">
-								<label className="label">
+								<label className="label" htmlFor="userId">
 									<span className="label-text font-semibold">User ID</span>
 								</label>
 								<input
+									id="userId"
 									type="text"
 									placeholder="Type your user ID"
 									className="input input-bordered focus:input-secondary transition"
@@ -88,10 +92,11 @@ const LoginPage = () => {
 							</div>
 
 							<div className="form-control mb-6">
-								<label className="label">
+								<label className="label" htmlFor="password">
 									<span className="label-text font-semibold">Password</span>
 								</label>
 								<input
+									id="password"
 									type="password"
 									placeholder="Type your password"
 									className="input input-bordered focus:input-secondary transition"
@@ -106,6 +111,12 @@ const LoginPage = () => {
 									className="text-sm text-secondary hover:underline"
 								>
 									Forgot Password?
+								</Link>
+								<Link
+									to="/register"
+									className="text-sm text-secondary hover:underline"
+								>
+									Create an account
 								</Link>
 							</div>
 

@@ -20,7 +20,7 @@ export default function IncidentForm() {
 	useEffect(() => {
 		async function fetchUsers() {
 			try {
-				const response = await fetch("http://localhost:5250/api/users", {
+				const response = await fetch("http://localhost:5000/api/users", {
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("authToken")}`,
 					},

@@ -1,119 +1,145 @@
-# IT infrastructure management software
+# Oblivion — Centralized IT Infrastructure Management Platform
 
-**Project ID:** P03  
-**Course:** UE23CS341A  
-**Academic Year:** 2025  
-**Semester:** 5th Sem  
-**Campus:** RR  
-**Branch:** CSE  
-**Section:** I  
-**Team:** Oblivion
-
-## 📋 Project Description
-
-This is management of hardware, software and other infrastructure related activities. Buying hardware/software, making sure that licensed software is installed on all office hardware, etc
-
-This repository contains the source code and documentation for the IT infrastructure management software project, developed as part of the UE23CS341A course at PES University.
-
-## 🧑‍💻 Development Team (Oblivion)
-
-- [@SdAasim](https://github.com/SdAasim) - Scrum Master
-- [@Shreejith-19](https://github.com/Shreejith-19) - Developer Team
-- [@Shihab31333](https://github.com/Shihab31333) - Developer Team
-- [@shivukc-04](https://github.com/shivukc-04) - Developer Team
-
-## 👨‍🏫 Teaching Assistant
-
-- [@Crashbadger24](https://github.com/Crashbadger24)
-- [@Srujkul](https://github.com/Srujkul)
-- [@srishmath](https://github.com/srishmath)
-
-## 👨‍⚖️ Faculty Supervisor
-
-- [@sapnavm](https://github.com/sapnavm)
-
-
-## 🚀 Getting Started
-
-### Prerequisites
-- [List your prerequisites here]
-
-### Installation
-1. Clone the repository
-   ```bash
-   git clone https://github.com/pestechnology/PESU_RR_CSE_I_P03_IT_infrastructure_management_software_Oblivion.git
-   cd PESU_RR_CSE_I_P03_IT_infrastructure_management_software_Oblivion
-   ```
-
-2. Install dependencies
-   ```bash
-   # Add your installation commands here
-   ```
-
-3. Run the application
-   ```bash
-   # Add your run commands here
-   ```
-
-## 📁 Project Structure
-
-```
-PESU_RR_CSE_I_P03_IT_infrastructure_management_software_Oblivion/
-├── src/                 # Source code
-├── docs/               # Documentation
-├── tests/              # Test files
-├── .github/            # GitHub workflows and templates
-├── README.md          # This file
-└── ...
-```
-
-## 🛠️ Development Guidelines
-
-### Branching Strategy
-- `main`: Production-ready code
-- `develop`: Development branch
-- `feature/*`: Feature branches
-- `bugfix/*`: Bug fix branches
-
-### Commit Messages
-Follow conventional commit format:
-- `feat:` New features
-- `fix:` Bug fixes
-- `docs:` Documentation changes
-- `style:` Code style changes
-- `refactor:` Code refactoring
-- `test:` Test-related changes
-
-### Code Review Process
-1. Create feature branch from `develop`
-2. Make changes and commit
-3. Create Pull Request to `develop`
-4. Request review from team members
-5. Merge after approval
-
-## 📚 Documentation
-
-- [API Documentation](docs/api.md)
-- [User Guide](docs/user-guide.md)
-- [Developer Guide](docs/developer-guide.md)
-
-## 🧪 Testing
-
-```bash
-# Run tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-```
-
-## 📄 License
-
-This project is developed for educational purposes as part of the PES University UE23CS341A curriculum.
+**Oblivion** is an enterprise-grade IT infrastructure monitoring, server inventory management, and incident response platform built on the **MERN** stack (MongoDB, Express.js, React 18, Node.js). Designed to eliminate administrative blind spots, delayed troubleshooting, and unmonitored system assets, Oblivion provides real-time telemetry streaming, role-based governance, structured incident lifecycles, and security-aware audit logging.
 
 ---
 
-**Course:** UE23CS341A  
-**Institution:** PES University  
-**Academic Year:** 2025  
-**Semester:** 5th Sem
+## 🏛️ System Architecture
+
+Oblivion adopts a 3-tier architectural model separating client presentation, business rules, and state persistence:
+
+- **Frontend**: React 18, Vite, React Router v6, Tailwind CSS, DaisyUI, Recharts, Axios
+- **Backend**: Node.js, Express.js, Mongoose ODM, JWT, bcryptjs, Nodemailer
+- **Database**: MongoDB Atlas / Local MongoDB
+- **DevOps & Testing**: GitHub Actions CI/CD, ESLint, Biome, Vitest, Jest
+
+---
+
+## ✨ Key Functional Modules
+
+### 1. 📊 Real-Time Infrastructure Dashboard & Telemetry
+* **Live Telemetry Stream:** Continuous metrics polling/streaming delivering hardware performance indicators for CPU, Memory, and Disk utilization across active server nodes.
+* **Interactive Visualizations:** Time-series charts displaying historical performance trends and dynamic threshold monitoring.
+
+### 2. 🖥️ Server Inventory Management
+* **Infrastructure Nodes:** Complete CRUD interface for registering hardware nodes with unique server identifiers, static/dynamic IP addresses, operational status (Active/Inactive), and creator tracking.
+* **Node Telemetry Coupling:** Seamlessly maps incoming streaming telemetry to registered database servers.
+
+### 3. 🚨 Incident Lifecycle & Ticket Management
+* **Structured Incident Tracking:** Complete lifecycle tracking for operational issues (open -> in-progress -> resolved) with assigned engineers, priority levels (High, Medium, Low), and resolution timestamps.
+* **Role Enforcement:** All user roles can raise tickets; status changes and resolution workflows are reserved for Operator and Admin users.
+
+### 4. 🔒 Role-Based Access Control (RBAC) & Security
+* **Granular Roles:**
+  * **Admin**: Full system governance, audit log inspection, server management, and privileged user creation.
+  * **Operator**: Active IT support — server inventory CRUD, incident assignment, status updates, and trend analysis.
+  * **Viewer**: Read-only monitoring dashboard access, live metrics inspection, and public incident submission.
+* **JWT & bcrypt Security:** Password security using bcrypt and signed JSON Web Tokens attached via Axios interceptors.
+
+### 5. 📑 Audit Logs & Compliance Governance
+* **Request Interception:** Express middleware captures all incoming HTTP requests, recording user IDs, IP addresses, HTTP methods, route paths, status codes, user-agent details, and response latency.
+* **Payload Masking:** Sanitizes sensitive parameters prior to MongoDB log persistence.
+
+---
+
+## 📁 Repository Structure
+
+```text
+.
+├── .github/
+│   ├── CODEOWNERS                      # Repository path ownership
+│   └── workflows/
+│       └── ci-cd.yml                   # Automated GitHub Actions build & test pipeline
+├── backend/
+│   ├── src/
+│   │   ├── config/                     # Mongoose database connection setup
+│   │   ├── controllers/                # Auth, Server, Incident, Metric, Audit controllers
+│   │   ├── middlewares/                # Token verification, RBAC, and Audit Logger
+│   │   ├── models/                     # User, Server, Incident, Metric, AuditLog models
+│   │   ├── routes/                     # Protected & public REST API endpoints
+│   │   └── utils/                      # Alert notification services
+│   ├── tests/                          # Integration and unit test suites
+│   ├── server.js                       # Express application bootstrap
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/                 # Navbar, StatsCard, MetricChart, RoleRoute guards
+│   │   ├── pages/                      # Dashboard, Servers, Incidents, Audit Logs, Trends
+│   │   ├── services/                   # Axios client configuration & API wrappers
+│   │   ├── App.jsx                     # Root application component
+│   │   └── main.jsx                    # React entrypoint & router definitions
+│   ├── vite.config.js
+│   └── package.json
+├── .gitignore
+└── docker-compose.yml
+```
+
+---
+
+## 🚀 Quick Start Guide
+
+### Prerequisites
+* **Node.js**: v18.x or higher
+* **npm**: v9.x or higher
+* **MongoDB**: Active MongoDB Atlas connection URI or local MongoDB instance
+
+---
+
+### Step 1: Clone Repository
+```bash
+git clone <your-repository-url>
+cd PESU_RR_CSE_I_P03_IT_infrastructure_management_software_Oblivion
+```
+
+---
+
+### Step 2: Backend Setup
+
+1. Navigate to the backend folder:
+   ```bash
+   cd backend
+   npm install
+   ```
+
+2. Create a `.env` file inside `backend/`:
+   ```env
+   PORT=5000
+   CONNECTION_URI=your_mongodb_atlas_uri
+   JWT_SECRET_KEY=your_jwt_secret_key
+   JWT_EXPIRES_IN=24h
+   ```
+
+3. Start the Express server:
+   ```bash
+   node server.js
+   ```
+
+---
+
+### Step 3: Frontend Setup
+
+1. Open a new terminal window and navigate to `frontend/`:
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+2. Start the Vite development server:
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 📜 Academic Identity & Acknowledgments
+
+* **Course:** UE23CS341A (5th Semester)
+* **Campus:** PES University (RR Campus)
+* **Branch:** Computer Science Engineering
+* **Section / Team:** Section I — Team Oblivion
+
+### Development Team
+* **Scrum Master:** SdAasim
+* **Developer Team:** Shreejith-19
+* **Developer Team:** Shihab31333
+* **Developer Team:** shivukc-04

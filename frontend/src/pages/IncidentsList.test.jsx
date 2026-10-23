@@ -87,9 +87,7 @@ describe('IncidentsList Page', () => {
     );
 
     await waitFor(() => {
-      expect(
-        screen.queryByText('Critical Server Down')
-      ).toBeInTheDocument() || expect(screen.getByText(/incident/i)).toBeInTheDocument();
+      expect(screen.getByText(/Critical Server Down/)).toBeInTheDocument();
     });
   });
 
@@ -105,9 +103,7 @@ describe('IncidentsList Page', () => {
     );
 
     await waitFor(() => {
-      expect(
-        screen.queryByText(/no incidents|empty/i)
-      ).toBeInTheDocument() || expect(screen.getByText(/incident/i)).toBeInTheDocument();
+      expect(screen.getByText('No incidents found.')).toBeInTheDocument();
     });
   });
 

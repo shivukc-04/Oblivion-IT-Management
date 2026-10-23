@@ -77,44 +77,67 @@ describe('Authentication and Authorization Integration Tests', () => {
       expect(isPasswordHashed).toBe(true);
     });
 
-    it('should register a new admin user successfully', async () => {
-      const adminData = {
-        userId: 'admin001',
-        username: 'adminuser',
-        password: 'adminpass123',
-        role: 'admin',
-        email: 'admin@example.com'
-      };
+    it.each(['admin', 'operator'])(
+      'should create a viewer when public registration requests the %s role',
+      async (role) => {
+        await request(app)
+          .post('/api/auth/register')
+          .send({
+            userId: `req-${role}`,
+            username: `${role}request`,
+            password: 'password123',
+            role,
+            email: `${role}@example.com`
+          })
+          .expect(201);
 
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send(adminData)
-        .expect(201);
+        const user = await User.findOne({ userId: `req-${role}` });
+        expect(user.role).toBe('viewer');
+      }
+    );
 
-      expect(response.body).toEqual({ message: 'new User created' });
+    it('should require an admin token to create a user with an assigned role', async () => {
+      await request(app)
+        .post('/api/auth/admin/register')
+        .send({
+          userId: 'admin-created',
+          username: 'createduser',
+          password: 'password123',
+          role: 'admin',
+          email: 'created@example.com'
+        })
+        .expect(401);
 
-      const admin = await User.findOne({ userId: 'admin001' });
-      expect(admin).toBeTruthy();
-      expect(admin.role).toBe('admin');
+      expect(await User.findOne({ userId: 'admin-created' })).toBeNull();
     });
 
-    it('should register a new operator user successfully', async () => {
-      const operatorData = {
-        userId: 'operator001',
-        username: 'operatoruser',
-        password: 'operatorpass123',
-        role: 'operator',
-        email: 'operator@example.com'
-      };
+    it('should allow an authenticated admin to create an admin account', async () => {
+      const admin = await User.create({
+        userId: 'existing-admin',
+        username: 'existingadmin',
+        password: 'password123',
+        role: 'admin',
+        email: 'existing-admin@example.com'
+      });
+      const token = jwt.sign(
+        { _id: admin._id, userId: admin.userId, role: admin.role },
+        process.env.JWT_SECRET_KEY
+      );
 
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send(operatorData)
+      await request(app)
+        .post('/api/auth/admin/register')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          userId: 'admin-created',
+          username: 'createdadmin',
+          password: 'password123',
+          role: 'admin',
+          email: 'created@example.com'
+        })
         .expect(201);
 
-      const operator = await User.findOne({ userId: 'operator001' });
-      expect(operator).toBeTruthy();
-      expect(operator.role).toBe('operator');
+      const createdAdmin = await User.findOne({ userId: 'admin-created' });
+      expect(createdAdmin.role).toBe('admin');
     });
 
     it('should return 409 when trying to register with duplicate userId', async () => {
@@ -495,22 +518,20 @@ describe('Authentication and Authorization Integration Tests', () => {
   });
 
   describe('Complete Authentication Flow', () => {
-    it('should complete full registration -> login -> access protected resource flow', async () => {
-      // Step 1: Register a new admin user
-      const adminData = {
+    it('should complete public registration -> login and keep the user restricted', async () => {
+      const userData = {
         userId: 'admin999',
-        username: 'newadmin',
+        username: 'newuser',
         password: 'securepass123',
         role: 'admin',
-        email: 'newadmin@example.com'
+        email: 'newuser@example.com'
       };
 
       await request(app)
         .post('/api/auth/register')
-        .send(adminData)
+        .send(userData)
         .expect(201);
 
-      // Step 2: Login with the new admin
       const loginResponse = await request(app)
         .post('/api/auth/login')
         .send({
@@ -520,16 +541,12 @@ describe('Authentication and Authorization Integration Tests', () => {
         .expect(200);
 
       expect(loginResponse.body).toHaveProperty('token');
-      const token = loginResponse.body.token;
+      expect(loginResponse.body.user.role).toBe('viewer');
 
-      // Step 3: Access protected resource with the token
-      const usersResponse = await request(app)
+      await request(app)
         .get('/api/users')
-        .set('Authorization', `Bearer ${token}`)
-        .expect(200);
-
-      expect(Array.isArray(usersResponse.body)).toBe(true);
-      expect(usersResponse.body.some(u => u.userId === 'admin999')).toBe(true);
+        .set('Authorization', `Bearer ${loginResponse.body.token}`)
+        .expect(403);
     });
 
     it('should handle multiple users with different roles accessing resources', async () => {
@@ -558,12 +575,28 @@ describe('Authentication and Authorization Integration Tests', () => {
         }
       ];
 
-      // Register all users
+      const admin = await User.create({
+        userId: 'seed-admin',
+        username: 'seedadmin',
+        password: 'pass123',
+        role: 'admin',
+        email: 'seed-admin@example.com'
+      });
+      const adminToken = jwt.sign(
+        { _id: admin._id, userId: admin.userId, role: admin.role },
+        process.env.JWT_SECRET_KEY
+      );
+
       for (const user of users) {
-        await request(app)
-          .post('/api/auth/register')
-          .send(user)
-          .expect(201);
+        const registration = request(app).post(
+          user.role === 'viewer'
+            ? '/api/auth/register'
+            : '/api/auth/admin/register'
+        );
+        if (user.role !== 'viewer') {
+          registration.set('Authorization', `Bearer ${adminToken}`);
+        }
+        await registration.send(user).expect(201);
       }
 
       // Login all users and get tokens

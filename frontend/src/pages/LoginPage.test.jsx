@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import LoginPage from './LoginPage';
 import axios from 'axios';
-import * as toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
-vi.mock('axios');
-vi.mock('react-hot-toast');
+vi.mock('axios', () => import('../__mocks__/axios.js'));
+vi.mock('react-hot-toast', () => import('../__mocks__/react-hot-toast.js'));
 
 describe('LoginPage', () => {
   beforeEach(() => {
@@ -18,9 +18,9 @@ describe('LoginPage', () => {
 
   it('should render login form', () => {
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginPage />
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     expect(screen.getByText('Welcome Back')).toBeInTheDocument();
@@ -31,9 +31,9 @@ describe('LoginPage', () => {
   it('should update user ID input field', async () => {
     const user = userEvent.setup();
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginPage />
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     const userIdInput = screen.getByPlaceholderText('Type your user ID');
@@ -45,9 +45,9 @@ describe('LoginPage', () => {
   it('should update password input field', async () => {
     const user = userEvent.setup();
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginPage />
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     const passwordInput = screen.getByPlaceholderText('Type your password');
@@ -59,9 +59,9 @@ describe('LoginPage', () => {
   it('should show error when fields are empty', async () => {
     const user = userEvent.setup();
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginPage />
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     const loginButton = screen.getByRole('button', { name: /login|sign in/i });
@@ -82,9 +82,9 @@ describe('LoginPage', () => {
     axios.post.mockResolvedValue(mockResponse);
 
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginPage />
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     await user.type(
@@ -115,9 +115,9 @@ describe('LoginPage', () => {
     });
 
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginPage />
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     await user.type(
@@ -148,9 +148,9 @@ describe('LoginPage', () => {
     });
 
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginPage />
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     await user.type(
@@ -177,9 +177,9 @@ describe('LoginPage', () => {
     axios.post.mockRejectedValue(new Error('Network error'));
 
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginPage />
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     await user.type(
@@ -202,9 +202,9 @@ describe('LoginPage', () => {
   it('should trim whitespace from inputs', async () => {
     const user = userEvent.setup();
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginPage />
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     const userIdInput = screen.getByPlaceholderText('Type your user ID');
@@ -218,9 +218,9 @@ describe('LoginPage', () => {
 
   it('should show back link to home', () => {
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <LoginPage />
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     const backLink = screen.getByText('Back to Home');

@@ -95,10 +95,13 @@ describe('MetricController Unit Tests', () => {
   // --- getCurrentMetrics Tests ---
   describe('getCurrentMetrics', () => {
     it('should generate metrics, save, and not send an alert for normal values', async () => {
-      // cpu: 30 + round(0.1 * 40) = 34
-      // mem: 50 + round(0.1 * 30) = 53
-      // dsk: 70 + round(0.1 * 20) = 72
-      randomSpy.mockReturnValue(0.1);
+      // Call 1 (Server select): 0
+      // Call 2 (cpu): 30 + round(0.1 * 40) = 34
+      // Call 3 (mem): 50 + round(0.1 * 30) = 53
+      // Call 4 (dsk): 70 + round(0.1 * 20) = 72
+      randomSpy
+        .mockReturnValueOnce(0)
+        .mockReturnValue(0.1);
       
       mockServerLimit.mockResolvedValue([{ serverId: 'server-001' }]);
       mockMetricSave.mockResolvedValue();
@@ -144,12 +147,15 @@ describe('MetricController Unit Tests', () => {
     });
 
     it('should trigger a "WARNING" alert when any metric is > 95 but < 100', async () => {
-      // cpu: 30 + round(0.1 * 40) = 34
-      // mem: 50 + round(1.6 * 30) = 98  (This triggers WARNING)
-      // dsk: 70 + round(0.5 * 20) = 80
-      randomSpy.mockReturnValueOnce(0.1);
-      randomSpy.mockReturnValueOnce(1.6);
-      randomSpy.mockReturnValueOnce(0.5);
+      // Call 1 (Server select): 0 -> index 0
+      // Call 2 (cpu): 30 + round(0.1 * 40) = 34
+      // Call 3 (mem): 50 + round(1.6 * 30) = 98 (triggers WARNING)
+      // Call 4 (dsk): 70 + round(0.5 * 20) = 80
+      randomSpy
+        .mockReturnValueOnce(0)
+        .mockReturnValueOnce(0.1)
+        .mockReturnValueOnce(1.6)
+        .mockReturnValueOnce(0.5);
       
       mockServerLimit.mockResolvedValue([{ serverId: 'server-001' }]);
       mockMetricSave.mockResolvedValue();
@@ -172,10 +178,11 @@ describe('MetricController Unit Tests', () => {
     });
     
     it('should trigger a "SERIOUS" alert when any metric >= 100', async () => {
-      // cpu: 30 + round(2.0 * 40) = 110
-      // mem: 50 + round(2.0 * 30) = 110
-      // dsk: 70 + round(2.0 * 20) = 110
-      randomSpy.mockReturnValue(2.0); 
+      // Call 1 (Server select): 0 -> index 0
+      // Calls 2-4: 2.0 -> cpu: 110, mem: 110, dsk: 110
+      randomSpy
+        .mockReturnValueOnce(0)
+        .mockReturnValue(2.0); 
       
       mockServerLimit.mockResolvedValue([{ serverId: 'server-001' }]);
       mockMetricSave.mockResolvedValue();
@@ -198,10 +205,15 @@ describe('MetricController Unit Tests', () => {
     });
 
     it('should prioritize SERIOUS alert over WARNING when metrics >= 100', async () => {
-      // One metric at 100, others above 95
-      randomSpy.mockReturnValueOnce(2.0); // cpu: 110
-      randomSpy.mockReturnValueOnce(1.6); // mem: 98
-      randomSpy.mockReturnValueOnce(1.0); // dsk: 90
+      // Call 1 (Server select): 0 -> index 0
+      // Call 2 (cpu): 30 + round(2.0 * 40) = 110 (>= 100)
+      // Call 3 (mem): 50 + round(1.6 * 30) = 98 (> 95)
+      // Call 4 (dsk): 70 + round(1.0 * 20) = 90
+      randomSpy
+        .mockReturnValueOnce(0)
+        .mockReturnValueOnce(2.0)
+        .mockReturnValueOnce(1.6)
+        .mockReturnValueOnce(1.0);
       
       mockServerLimit.mockResolvedValue([{ serverId: 'server-002' }]);
       mockMetricSave.mockResolvedValue();
@@ -262,7 +274,12 @@ describe('MetricController Unit Tests', () => {
     });
 
     it('should continue even if sendAlertEmail fails', async () => {
-      randomSpy.mockReturnValue(2.0); // Trigger SERIOUS alert
+      // Call 1 (Server select): 0 -> index 0
+      // Calls 2-4: 2.0 -> triggers SERIOUS alert
+      randomSpy
+        .mockReturnValueOnce(0)
+        .mockReturnValue(2.0);
+
       mockServerLimit.mockResolvedValue([{ serverId: 'server-001' }]);
       mockMetricSave.mockResolvedValue();
       mockSendAlertEmail.mockRejectedValue(new Error('Email service down'));

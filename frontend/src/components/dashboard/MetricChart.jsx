@@ -3,7 +3,7 @@ import React from 'react'
 // Very small, dependency-free sparkline-like chart for quick prototyping.
 export default function MetricChart({ title, data = [], color = '#3b82f6', height = 60 }) {
   // data: array of numbers or { value }
-  const values = data.map(d => (typeof d === 'number' ? d : d.value)).filter(v => typeof v === 'number')
+  const values = data.map(d => (typeof d === 'number' ? d : d?.value)).filter(v => typeof v === 'number')
   const padding = 4
   const w = 300
   const h = height

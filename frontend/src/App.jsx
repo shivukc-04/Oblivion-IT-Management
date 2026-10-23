@@ -1,6 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import api from "../src/services/axiosConfig.js";
 
 export default function App() {
@@ -27,6 +28,9 @@ export default function App() {
 
 	return (
 		<div data-theme="corporate" className="min-h-screen bg-base-200 p-8">
+			<Link to="/register" className="btn btn-secondary mb-4">
+				Create an account
+			</Link>
 			     {" "}
 			<button className="btn btn-primary mb-4" onClick={fetchUsers}>
 				        Show All Users      {" "}

@@ -6,11 +6,11 @@ import { MemoryRouter } from 'react-router-dom';
 import ServersPage from './ServersPage';
 import { AuthProvider } from '../services/authProvider';
 import serversService from '../services/serversService';
-import * as toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { jwtDecode } from 'jwt-decode';
 
 vi.mock('../services/serversService');
-vi.mock('react-hot-toast');
+vi.mock('react-hot-toast', () => import('../__mocks__/react-hot-toast.js'));
 vi.mock('jwt-decode');
 
 describe('ServersPage', () => {

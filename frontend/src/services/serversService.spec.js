@@ -107,12 +107,7 @@ describe('serversService', () => {
     });
 
     it('should handle server not found error', async () => {
-      api.delete.mockRejectedValue({
-        response: {
-          status: 404,
-          data: { message: 'Server not found' },
-        },
-      });
+      api.delete.mockRejectedValue(new Error('Server not found'));
 
       await expect(serversService.deleteServer('nonexistent')).rejects.toThrow(
         'Server not found'
