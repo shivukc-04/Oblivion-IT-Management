@@ -87,8 +87,8 @@ Oblivion adopts a 3-tier architectural model separating client presentation, bus
 
 ### Step 1: Clone Repository
 ```bash
-git clone <your-repository-url>
-cd PESU_RR_CSE_I_P03_IT_infrastructure_management_software_Oblivion
+git clone https://github.com/shivukc-04/Oblivion-IT-Management
+cd Oblivion-IT-Management
 ```
 
 ---
